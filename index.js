@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
@@ -8,7 +8,7 @@ const port = 3000
 app.use(express.json())
 app.use(cors())
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASS}@cluster0.5rsc2du.mongodb.net/?appName=Cluster0`;
-// const uri = "mongodb+srv://Zap_Shift_Server:btj7VKJ6jsqQ3F5Q@cluster0.5rsc2du.mongodb.net/?appName=Cluster0";
+
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -36,6 +36,13 @@ async function run() {
             const result = await parcelsCollection.find(query,options).toArray();
             res.send(result);
         })
+            app.get('/parcels/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id:new ObjectId(id) }
+            // console.log(query)
+            const result = await parcelsCollection.findOne(query);
+            res.send(result);
+        })
             app.post('/parcels', async (req, res) => {
             const parcel = req.body;
              // parcel created time
@@ -43,13 +50,13 @@ async function run() {
             const result = await parcelsCollection.insertOne(parcel);
             res.send(result)
         })
-            app.delete('/parcels/:id',async(req,res)=>{
-            const id = req.params.id
-            const _id ={ _id:new Object(id) }
-            const result = await parcelsCollection.deleteOne(_id);
-            res.send(result)
-
-            })
+            app.delete('/parcels/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id:new ObjectId(id) }
+            const result = await parcelsCollection.deleteOne(query);
+            res.send(result);
+        })
+        
 
 
 
