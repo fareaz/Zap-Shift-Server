@@ -108,6 +108,10 @@ async function run() {
     
 
     //user
+    app.get("/users", async (req,res)=>{
+      const result = await userCollection.find().toArray()
+      res.send(result)
+    })
     app.post("/users", async (req, res) => {
       const user = req.body;
       user.role = "user";
@@ -264,16 +268,7 @@ async function run() {
         .toArray();
       res.send(result);
     });
-    // app.get("/payment", async (req, res) => {
-    //   const query = {};
-    //   const { email } = req.query;
-    //   if (email) {
-    //     query.senderEmail = email;
-    //   }
-    //   const options = { sort: { createdAt: -1 } };
-    //   const result = await paymentCollection.find(query, options).toArray();
-    //   res.send(result);
-    // });
+   
 
     await client.db("admin").command({ ping: 1 });
     console.log(
