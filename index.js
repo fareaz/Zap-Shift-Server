@@ -63,55 +63,58 @@ async function run() {
     //rider
     app.post("/riders", async (req, res) => {
       const rider = req.body;
-      
+
       rider.status = "pending";
       rider.createdAt = new Date();
-      const result = await ridersCollection
-      .insertOne(rider);
+      const result = await ridersCollection.insertOne(rider);
       res.send(result);
-     });
-        app.get('/riders', async (req, res) => {
-            const query = {}
-            if (req.query.status) {
-                query.status = req.query.status;
-            }
-          
-            const result = await ridersCollection.find(query).sort({createdAt: -1}).toArray();
-            res.send(result);
-        })
+    });
+    app.get("/riders", async (req, res) => {
+      const query = {};
+      if (req.query.status) {
+        query.status = req.query.status;
+      }
 
-         app.patch('/riders/:id', verifyFBToken, async (req, res) => {
-            const status = req.body.status;
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-            const updatedDoc = {
-                $set: {
-                    status: status
-                }
-            }
+      const result = await ridersCollection
+        .find(query)
+        .sort({ createdAt: -1 })
+        .toArray();
+      res.send(result);
+    });
+    app.patch("/riders/:id", verifyFBToken, async (req, res) => {
+      const status = req.body.status;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: status,
+        },
+      };
 
-            const result = await ridersCollection.updateOne(query, updatedDoc);
+      const result = await ridersCollection.updateOne(query, updatedDoc);
 
-            if (status === 'approved') {
-                const email = req.body.email;
-                const userQuery = { email }
-                const updateUser = {
-                    $set: {
-                        role: 'rider'
-                    }
-                }
-                const userResult = await userCollection.updateOne(userQuery, updateUser);
-            }
+      if (status === "approved") {
+        const email = req.body.email;
+        const userQuery = { email };
+        const updateUser = {
+          $set: {
+            role: "rider",
+          },
+        };
+        const userResult = await userCollection.updateOne(
+          userQuery,
+          updateUser
+        );
+      }
 
-            res.send(result);
-        })
-    
+      res.send(result);
+    });
 
     //user
-    app.get("/users", async (req,res)=>{
-      const result = await userCollection.find().toArray()
-      res.send(result)
-    })
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
     app.post("/users", async (req, res) => {
       const user = req.body;
       user.role = "user";
@@ -126,6 +129,18 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
+    app.patch('/users/:id/role',  async (req, res) => {
+            const id = req.params.id;
+            const roleInfo = req.body;
+            const query = { _id: new ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    role: roleInfo.role
+                }
+            }
+            const result = await userCollection.updateOne(query, updatedDoc)
+            res.send(result);
+        })
 
     //  parcel api
     app.get("/parcels", async (req, res) => {
@@ -190,7 +205,6 @@ async function run() {
 
       res.send({ url: session.url });
     });
-
     app.patch("/payment-success", async (req, res) => {
       const sessionId = req.query.session_id;
       const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -268,7 +282,6 @@ async function run() {
         .toArray();
       res.send(result);
     });
-   
 
     await client.db("admin").command({ ping: 1 });
     console.log(
